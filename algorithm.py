@@ -24,7 +24,7 @@ model.add_callback("on_predict_batch_end", on_predict_batch_end)
 @socket.event
 def gen_frames(source: int | str = 0):
     for result, frame in model.track(
-        source="new_traffic.mp4",
+        source=source,
         stream=True,
         tracker="bytetrack.yaml",
         classes=[2, 3, 5, 7, 8],
