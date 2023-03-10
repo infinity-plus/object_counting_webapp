@@ -11,7 +11,7 @@ def draw_dot(frame, dot, color=(0, 255, 0), thickness=1):
     cv2.circle(frame, (x, y), 2, color, thickness)
 
 
-def draw_text(frame, text, position, color=(0, 255, 0), thickness=1):
+def draw_text(frame, text, position, color=(0, 255, 0), thickness=2):
     x, y = position
     cv2.putText(
         frame,

@@ -15,9 +15,6 @@ def on_predict_batch_end(predictor):
     predictor.results = zip(predictor.results, im0s)
 
 
-ids = set()
-counter = {}
-
 model.add_callback("on_predict_batch_end", on_predict_batch_end)
 
 
@@ -34,22 +31,23 @@ def connect():
 @socket.on("disconnect")
 def disconnect_handler():
     print("Client disconnected")
-    ids.clear()
-    counter.clear()
     global loop
     loop = False
 
 
 @socket.event
 def gen_frames(source: int | str = 0):
+    ids = set()
+    counter = {}
     for result, frame in model.track(
+        # source="rtsp://192.168.200.160:8080/h264_ulaw.sdp",
+        # source="rtsp://192.168.200.237:8080/h264_ulaw.sdp",
+        # source="new_traffic.mp4",
         source=source,
         stream=True,
         tracker="bytetrack.yaml",
         # classes=[2, 3, 5, 7, 8],
     ):
-        if not loop:
-            break
         for obj in result.boxes.boxes.cpu().numpy():
             #  check if client disconnected
 
@@ -63,7 +61,10 @@ def gen_frames(source: int | str = 0):
                 cat = int(obj[6])
             except IndexError:
                 cat = 9999
-            class_name = model.names[cat] if model.names else "Unknown"
+            try:
+                class_name = model.names[cat] if model.names else "Unknown"
+            except KeyError:
+                class_name = "Unknown"
 
             if _id not in ids:
                 ids.add(_id)
@@ -78,6 +79,14 @@ def gen_frames(source: int | str = 0):
             draw_box(frame, (x1, y1, x2, y2))
             draw_text(frame, f"{class_name}", (x1, y1 - 10))
             draw_dot(frame, (cx, cy), (0, 0, 255), 1)
+        # sort counter
+        counter = dict(
+            sorted(
+                counter.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+        )
         socket.emit("counter", counter)
 
         ret, _buffer = cv2.imencode(".jpg", frame)
