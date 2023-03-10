@@ -40,9 +40,6 @@ def gen_frames(source: int | str = 0):
     ids = set()
     counter = {}
     for result, frame in model.track(
-        # source="rtsp://192.168.200.160:8080/h264_ulaw.sdp",
-        # source="rtsp://192.168.200.237:8080/h264_ulaw.sdp",
-        # source="new_traffic.mp4",
         source=source,
         stream=True,
         tracker="bytetrack.yaml",

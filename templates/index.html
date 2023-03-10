@@ -99,7 +99,8 @@
 
         var url = document.getElementsByName('url')[0].value;
         //  set this url as query parameter for img tag
-        document.querySelector('img').src = "{{ url_for('video_feed', source=" + url + ") }}";
+        console.log(encodeURI(url))
+        document.querySelector('img').src = `video_feed/${encodeURI(url)}`;
     });
     socket.on('counter', function (msg) {
         var paragraph = document.getElementById('my_counter');
