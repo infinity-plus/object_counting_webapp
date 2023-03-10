@@ -9,18 +9,10 @@ def index():
     return render_template("index.html")
 
 
-@socket.on("connect")
-def connect():
-    print("Client connected")
-
-
-@socket.on("disconnect")
-def disconnect():
-    print("Client disconnected")
-
-
 @app.route("/video_feed/")
 def video_feed(source=0):
+    if source == "0":
+        source = 0
     return Response(
         gen_frames(source),
         mimetype="multipart/x-mixed-replace; boundary=frame",

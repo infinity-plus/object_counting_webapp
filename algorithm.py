@@ -21,23 +21,49 @@ counter = {}
 model.add_callback("on_predict_batch_end", on_predict_batch_end)
 
 
+loop = True
+
+
+@socket.on("connect")
+def connect():
+    print("Client connected")
+    global loop
+    loop = True
+
+
+@socket.on("disconnect")
+def disconnect_handler():
+    print("Client disconnected")
+    ids.clear()
+    counter.clear()
+    global loop
+    loop = False
+
+
 @socket.event
 def gen_frames(source: int | str = 0):
     for result, frame in model.track(
         source=source,
         stream=True,
         tracker="bytetrack.yaml",
-        classes=[2, 3, 5, 7, 8],
+        # classes=[2, 3, 5, 7, 8],
     ):
+        if not loop:
+            break
         for obj in result.boxes.boxes.cpu().numpy():
+            #  check if client disconnected
+
             x1 = int(obj[0])
             y1 = int(obj[1])
             x2 = int(obj[2])
             y2 = int(obj[3])
 
             _id = int(obj[4])
-            cat = int(obj[6])
-            class_name = model.names[cat] if model.names else str(cat)
+            try:
+                cat = int(obj[6])
+            except IndexError:
+                cat = 9999
+            class_name = model.names[cat] if model.names else "Unknown"
 
             if _id not in ids:
                 ids.add(_id)
